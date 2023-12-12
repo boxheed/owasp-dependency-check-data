@@ -113,7 +113,7 @@ workflows:
 
   test-and-tag:
     unless:
-      unless: [ scheduled, << pipeline.parameters.action >> ]
+      when: [ build, << pipeline.parameters.action >> ]
     jobs:
       - test:
           context: boxhead-builds
@@ -122,6 +122,8 @@ workflows:
               only: /^(?:main|master)$/
       - tag:
           context: boxhead-builds
+          requires: 
+            - test
           filters:
             branches:
               only: /^(?:main|master)$/
