@@ -16,7 +16,7 @@ jobs:
       - checkout
       - run: mkdir -p ./bin && curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
       - run: java -jar ./bin/vulnz.jar --help
-      - run: java -jar ./bin/vulnz.jar cve --cache --directory ./nvd-data
+      - run: java -jar ./bin/vulnz.jar cve --cache --directory ./nvd-data --debug
       - run: ls -al ./nvd-data
       
 
