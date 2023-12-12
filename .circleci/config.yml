@@ -14,9 +14,8 @@ jobs:
     # See: https://circleci.com/docs/configuration-reference/#steps
     steps:
       - checkout
-      - curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
-      - run:
-          command: "./bin/vulnz.jar --help"
+      - run: curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
+      - run: "./bin/vulnz.jar --help"
       
 
 # Orchestrate jobs using workflows
