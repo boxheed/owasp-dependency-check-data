@@ -20,7 +20,16 @@ jobs:
       - run: ls -al ./nvd-data
       - run: current_date=$(date +'%Y-%m-%d') && git add -A && git commit -m "$current_date CVE NVD Data Updated" && git push
       
-      
+  release:
+    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/configuration-reference/#executor-job
+    docker:
+      - image: cimg/openjdk:17.0
+    # Add steps to the job
+    # See: https://circleci.com/docs/configuration-reference/#steps
+    steps:
+      - checkout
+      - run: echo "Release"
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
