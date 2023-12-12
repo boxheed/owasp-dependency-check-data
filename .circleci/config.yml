@@ -25,6 +25,6 @@ jobs:
 workflows:
   update:
     jobs:
-      - update-nvd-data
-          context: boxhead-builds
+      - update-nvd-data:
+        context: boxhead-builds
 
