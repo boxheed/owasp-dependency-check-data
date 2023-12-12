@@ -1,0 +1,138 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/configuration-reference
+version: 2.1
+
+parameters:
+  action:
+    type: enum
+    enum: [build, scheduled]
+    default: build
+
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/configuration-reference/#jobs
+jobs:
+
+  download-and-create-db:
+    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/configuration-reference/#executor-job
+    docker:
+      - image: cimg/openjdk:17.0
+    # Add steps to the job
+    # See: https://circleci.com/docs/configuration-reference/#steps
+    steps:
+      - checkout
+      - run: mkdir -p ./bin && curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
+      - run: java -jar ./bin/vulnz.jar cve --cache --directory ./nvdcve-data --debug
+      - run: mkdir -p ./build/db
+      - run: curl -L https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.4/dependency-check-9.0.4-release.zip --output ./build/dependency-check.zip
+      - run: cd ./build && unzip dependency-check.zip && cd ..
+      - run: ./build/dependency-check/bin/dependency-check.sh --updateonly --nvdDatafeed file://$PWD/nvdcve-data/nvdcve-{0}.json.gz --data ./build/db
+
+  update-nvd-data:
+    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/configuration-reference/#executor-job
+    docker:
+      - image: cimg/openjdk:17.0
+    # Add steps to the job
+    # See: https://circleci.com/docs/configuration-reference/#steps
+    steps:
+      - checkout
+      - run: git config user.name fizzpod-machine-user
+      - run: git config user.email fizzpod-machine-user@users.noreply.github.com
+      - run: mkdir -p ./bin && curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
+      - run: java -jar ./bin/vulnz.jar --help
+      - run: java -jar ./bin/vulnz.jar cve --cache --directory ./nvdcve-data --debug
+      - run: ls -al ./nvdcve-data
+      - run: current_date=$(date +'%Y-%m-%d') && git add -A && git commit -m "$current_date CVE NVD Data Updated" && git push --set-upstream origin $CIRCLE_BRANCH
+      
+  test:
+    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/configuration-reference/#executor-job
+    docker:
+      - image: cimg/openjdk:17.0
+    # Add steps to the job
+    # See: https://circleci.com/docs/configuration-reference/#steps
+    steps:
+      - checkout
+      - run: mkdir -p ./build/db
+      - run: curl -L https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.4/dependency-check-9.0.4-release.zip --output ./build/dependency-check.zip
+      - run: cd ./build && unzip dependency-check.zip && cd ..
+      - run: ./build/dependency-check/bin/dependency-check.sh --updateonly --nvdDatafeed file://$PWD/nvdcve-data/nvdcve-{0}.json.gz --data ./build/db
+
+
+  tag:
+    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/configuration-reference/#executor-job
+    docker:
+      - image: cimg/openjdk:17.0
+    # Add steps to the job
+    # See: https://circleci.com/docs/configuration-reference/#steps
+    steps:
+      - checkout
+      - run: current_date=$(date +'%Y.%m.%d') && git tag "$current_date"
+      - run: git push --tags
+
+  publish:
+    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/configuration-reference/#executor-job
+    docker:
+      - image: cimg/openjdk:17.0
+    # Add steps to the job
+    # See: https://circleci.com/docs/configuration-reference/#steps
+    steps:
+      - checkout
+      - run: echo "publish"
+      - run: mkdir -p ./build/db
+      - run: curl -L https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.4/dependency-check-9.0.4-release.zip --output ./build/dependency-check.zip
+      - run: cd ./build && unzip dependency-check.zip && cd ..
+      - run: ./build/dependency-check/bin/dependency-check.sh --updateonly --nvdDatafeed file://$PWD/nvdcve-data/nvdcve-{0}.json.gz --data ./build/db
+
+# Orchestrate jobs using workflows
+# See: https://circleci.com/docs/configuration-reference/#workflows
+workflows:
+  download-and-create-db:
+    when:
+      unless:  [ scheduled, << pipeline.parameters.action >> ]
+    jobs:
+      - download-and-create-db:
+          context: boxhead-builds
+          filters:
+            branches:
+              only: /^(?:develop)$/
+
+  update-nvd-data:
+    when:
+      equal: [ scheduled, << pipeline.parameters.action >> ]
+    jobs:
+      - update-nvd-data:
+          context: boxhead-builds
+          filters:
+            branches:
+              only: /^(?:main|master)$/
+
+  test-and-tag:
+    unless:
+      unless: [ scheduled, << pipeline.parameters.action >> ]
+    jobs:
+      - test:
+          context: boxhead-builds
+          filters:
+            branches:
+              only: /^(?:main|master)$/
+      - tag:
+          context: boxhead-builds
+          filters:
+            branches:
+              only: /^(?:main|master)$/
+
+  publish:
+    jobs:
+      - publish:
+          context: boxhead-builds
+          filters:
+            # only act on version tags
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
