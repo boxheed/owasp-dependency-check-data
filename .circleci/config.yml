@@ -40,8 +40,8 @@ workflows:
           context: boxhead-builds
       - release:
           context: boxhead-builds
-          requires: 
-            - build
+#          requires: 
+#            - build
           filters:
             branches:
               only: /^(?:main|master)$/
