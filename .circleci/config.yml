@@ -14,6 +14,8 @@ jobs:
     # See: https://circleci.com/docs/configuration-reference/#steps
     steps:
       - checkout
+      - git config user.name fizzpod-machine-user
+      - git config user.email fizzpod-machine-user@users.noreply.github.com
       - run: mkdir -p ./bin && curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
       - run: java -jar ./bin/vulnz.jar --help
       - run: java -jar ./bin/vulnz.jar cve --cache --directory ./nvdcve-data --debug
