@@ -16,8 +16,10 @@ jobs:
       - checkout
       - run: mkdir -p ./bin && curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
       - run: java -jar ./bin/vulnz.jar --help
-      - run: java -jar ./bin/vulnz.jar cve --cache --directory ./nvd-data --debug
+      - run: java -jar ./bin/vulnz.jar cve --cache --directory ./nvdcve-data --debug
       - run: ls -al ./nvd-data
+      - run: current_date=$(date +'%Y-%m-%d') && git add -A && git commit -m "$current_date CVE NVD Data Updated" && git push
+      
       
 
 # Orchestrate jobs using workflows
@@ -27,6 +29,13 @@ workflows:
     jobs:
       - update-nvd-data:
           context: boxhead-builds
+      - release:
+          context: boxhead-builds
+          requires: 
+            - build
+          filters:
+            branches:
+              only: /^(?:main|master)$/
 
 
 
