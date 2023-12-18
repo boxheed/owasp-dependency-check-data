@@ -46,7 +46,7 @@ jobs:
             - v1-{{ .Revision }}
           paths:
             - ./build/db
-      - run: ls -altr ./build/db
+      - run: pwd && ls -altr 
       - setup_remote_docker
       - run:
           name: Build application Docker image
