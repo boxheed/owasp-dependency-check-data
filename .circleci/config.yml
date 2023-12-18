@@ -47,7 +47,7 @@ jobs:
       - run: java -jar ./bin/vulnz.jar --help
       - run: java -jar ./bin/vulnz.jar cve --cache --directory ./nvdcve-data --debug
       - run: ls -al ./nvdcve-data
-      - run: version=$(date +'%Y.%m.%d') && git add -A && git commit -m "$version CVE NVD Data Updated" && git flow release finish -m "$current_date CVE NVD Data Updated" '$version'
+      - run: version=$(date +'%Y.%m.%d') && git add -A && git commit -m "$version CVE NVD Data Updated" && git flow release finish -m "$version CVE NVD Data Updated" "$version"
       # -p
       #&& git push --set-upstream origin $CIRCLE_BRANCH
       
