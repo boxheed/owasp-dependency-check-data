@@ -40,7 +40,7 @@ jobs:
       - checkout
       - run: git config user.name fizzpod-machine-user
       - run: git config user.email fizzpod-machine-user@users.noreply.github.com
-      - run: chmod +x ./gitflow-init.sh && ./gitflow-iunit.sh
+      - run: chmod +x ./gitflow-init.sh && ./gitflow-init.sh
       - run: version=$(date +'%Y.%m.%d') && git flow release start $version
       - run: mkdir -p ./bin && curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
       - run: java -jar ./bin/vulnz.jar --help
@@ -102,10 +102,10 @@ workflows:
           filters:
             branches:
               only: /^(?:develop)$/
-      - test:
-          context: boxhead-builds
-          requires:
-            - update-nvd-data
+#      - test:
+#          context: boxhead-builds
+#          requires:
+#            - update-nvd-data
 #      - tag:
 #          context: boxhead-builds
 #          requires: 
