@@ -9,17 +9,11 @@ parameters:
     default: build
 
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/configuration-reference/#jobs
 jobs:
 
   download-and-create-db:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/configuration-reference/#executor-job
     docker:
       - image: cimg/openjdk:17.0
-    # Add steps to the job
-    # See: https://circleci.com/docs/configuration-reference/#steps
     steps:
       - checkout
       - run: mkdir -p ./bin && curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
@@ -30,63 +24,20 @@ jobs:
       - run: ./build/dependency-check/bin/dependency-check.sh --updateonly --nvdDatafeed file://$PWD/nvdcve-data/nvdcve-{0}.json.gz --data ./build/db
 
   update-nvd-data:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/configuration-reference/#executor-job
     docker:
       - image: cimg/openjdk:17.0
-    # Add steps to the job
-    # See: https://circleci.com/docs/configuration-reference/#steps
     steps:
       - checkout
       - run: git config user.name fizzpod-machine-user
       - run: git config user.email fizzpod-machine-user@users.noreply.github.com
-#      - run: sudo apt update && sudo apt install git-flow
-#      - run: ./gitflow-init.sh
-#      - run: version=$(date +'%Y.%m.%d') && git flow release start $version
       - run: mkdir -p ./bin && curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
-#      - run: java -jar ./bin/vulnz.jar --help
       - run: java -jar ./bin/vulnz.jar cve --cache --directory ./nvdcve-data --debug
-#      - run: ls -al ./nvdcve-data
       - run: version=$(date +'%Y.%m.%d') && git add -A && git commit -m "$version CVE NVD Data Updated" && git tag "$version" 
       - run: version=$(date +'%Y.%m.%d') && git push --atomic --set-upstream origin $CIRCLE_BRANCH $version
-      # && git flow release finish -m "$version CVE NVD Data Updated" "$version"
-      # -p
-      #&& git push --set-upstream origin $CIRCLE_BRANCH
       
-  test:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/configuration-reference/#executor-job
-    docker:
-      - image: cimg/openjdk:17.0
-    # Add steps to the job
-    # See: https://circleci.com/docs/configuration-reference/#steps
-    steps:
-      - checkout
-      - run: mkdir -p ./build/db
-      - run: curl -L https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.4/dependency-check-9.0.4-release.zip --output ./build/dependency-check.zip
-      - run: cd ./build && unzip dependency-check.zip && cd ..
-      - run: ./build/dependency-check/bin/dependency-check.sh --updateonly --nvdDatafeed file://$PWD/nvdcve-data/nvdcve-{0}.json.gz --data ./build/db
-
-
-  tag:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/configuration-reference/#executor-job
-    docker:
-      - image: cimg/openjdk:17.0
-    # Add steps to the job
-    # See: https://circleci.com/docs/configuration-reference/#steps
-    steps:
-      - checkout
-      - run: current_date=$(date +'%Y.%m.%d') && git tag "$current_date"
-      - run: git push --tags
-
   publish:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/configuration-reference/#executor-job
     docker:
       - image: cimg/openjdk:17.0
-    # Add steps to the job
-    # See: https://circleci.com/docs/configuration-reference/#steps
     steps:
       - checkout
       - run: echo "publish"
@@ -104,18 +55,7 @@ workflows:
           context: boxhead-builds
           filters:
             branches:
-              only: /^(?:develop)$/
-#      - test:
-#          context: boxhead-builds
-#          requires:
-#            - update-nvd-data
-#      - tag:
-#          context: boxhead-builds
-#          requires: 
-#            - test
-#          filters:
-#            branches:
-#              only: /^(?:main|master)$/
+              only: /^(?:main|master)$/
       - publish:
           context: boxhead-builds
           filters:
