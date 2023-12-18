@@ -91,35 +91,14 @@ jobs:
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
-  download-and-create-db:
-    when:
-      unless:  [ scheduled, << pipeline.parameters.action >> ]
-    jobs:
-      - download-and-create-db:
-          context: boxhead-builds
-          filters:
-            branches:
-              only: /^(?:develop)$/
-
-  update-nvd-data:
-    when:
-      equal: [ scheduled, << pipeline.parameters.action >> ]
+  build:
     jobs:
       - update-nvd-data:
           context: boxhead-builds
-          filters:
-            branches:
-              only: /^(?:main|master)$/
-
-  test-and-tag:
-    unless:
-      when: [ build, << pipeline.parameters.action >> ]
-    jobs:
       - test:
           context: boxhead-builds
-          filters:
-            branches:
-              only: /^(?:main|master)$/
+          requires:
+            - update-nvd-data
       - tag:
           context: boxhead-builds
           requires: 
@@ -127,9 +106,6 @@ workflows:
           filters:
             branches:
               only: /^(?:main|master)$/
-
-  publish:
-    jobs:
       - publish:
           context: boxhead-builds
           filters:
