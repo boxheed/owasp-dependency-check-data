@@ -44,8 +44,8 @@ jobs:
       - restore_cache:
           keys:
             - v1-{{ .Revision }}
-          paths:
-            - ./build/db
+#          paths:
+#            - ./build/db
       - run: pwd && ls -altr 
       - setup_remote_docker
       - run:
