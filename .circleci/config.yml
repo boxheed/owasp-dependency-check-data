@@ -42,7 +42,7 @@ jobs:
       - run: git config user.email fizzpod-machine-user@users.noreply.github.com
 #      - run: sudo apt update && sudo apt install git-flow
 #      - run: ./gitflow-init.sh
-      - run: version=$(date +'%Y.%m.%d') && git flow release start $version
+#      - run: version=$(date +'%Y.%m.%d') && git flow release start $version
       - run: mkdir -p ./bin && curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
 #      - run: java -jar ./bin/vulnz.jar --help
       - run: java -jar ./bin/vulnz.jar cve --cache --directory ./nvdcve-data --debug
