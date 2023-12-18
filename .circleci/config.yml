@@ -37,13 +37,15 @@ jobs:
   publish:
     docker:
       - image: docker:24.0.2-git
-    working_directory: ~/repo
+    #working_directory: ~/repo
     environment: *globals
     steps:
       - checkout
       - restore_cache:
           keys:
             - v1-{{ .Revision }}
+#          destination:
+#            - ~/
 #          paths:
 #            - ./build/db
       - run: pwd && ls -altr 
