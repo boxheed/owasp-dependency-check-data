@@ -44,11 +44,11 @@ jobs:
       - restore_cache:
           keys:
             - v1-{{ .Revision }}
-#          destination:
-#            - ~/
+          destination:
+            - /root/project
 #          paths:
 #            - ./build/db
-      - run: pwd && ls -altr 
+      - run: whoami && echo "$HOME" && pwd && ls -altr 
       - setup_remote_docker
       - run:
           name: Build application Docker image
