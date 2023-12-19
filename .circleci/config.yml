@@ -85,7 +85,7 @@ workflows:
       - publish-container:
           context: boxhead-builds
           requires: 
-            - database
+            - build-database
           filters:
             # only act on version tags
             branches:
