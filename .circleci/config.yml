@@ -7,7 +7,7 @@ vars: &globals
 
 jobs:
 
-  data:
+  update-cache:
     docker:
       - image: cimg/openjdk:17.0
     steps:
@@ -19,7 +19,7 @@ jobs:
       - run: version=$(date +'%Y.%m.%d') && git add -A && git commit -m "$version CVE NVD Data Updated [skip ci]" && git tag "$version" 
       - run: version=$(date +'%Y.%m.%d') && git push --atomic --set-upstream origin $CIRCLE_BRANCH $version
       
-  database:
+  build-database:
     docker:
       - image: cimg/openjdk:17.0
     steps:
@@ -34,7 +34,7 @@ jobs:
           paths:
             - build
 
-  publish:
+  publish-container:
     docker:
       - image: docker:24.0.2-git
     #working_directory: ~/repo
@@ -49,6 +49,7 @@ jobs:
 #          paths:
 #            - ./build/db
       - run: whoami && echo "$HOME" && pwd && ls -altr 
+      - run: cp -r /home/circleci/project/build .
       - setup_remote_docker
       - run:
           name: Build application Docker image
@@ -68,12 +69,12 @@ jobs:
 workflows:
   build:
     jobs:
-      - data:
+      - update-cache:
           context: boxhead-builds
           filters:
             branches:
               only: /^(?:main|master)$/
-      - database:
+      - build-database:
           context: boxhead-builds
           filters:
             # only act on version tags
@@ -81,7 +82,7 @@ workflows:
               ignore: /.*/
             tags:
               only: /^\d+\.\d+\.\d+$/
-      - publish:
+      - publish-container:
           context: boxhead-builds
           requires: 
             - database
