@@ -3,10 +3,9 @@
 version: 2.1
 
 vars: &globals
-  IMAGE_NAME: boxheed/owasp-dependency-check
+  IMAGE_NAME: boxheed/openjdk-17-nvd-cve-db
 
 jobs:
-
   update-cache:
     docker:
       - image: cimg/openjdk:17.0
