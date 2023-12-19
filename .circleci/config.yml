@@ -48,8 +48,8 @@ jobs:
             - /root/project
 #          paths:
 #            - ./build/db
-      - run: whoami && echo "$HOME" && pwd && ls -altr 
       - run: cp -r /home/circleci/project/build .
+      - run: whoami && echo "$HOME" && pwd && ls -altr 
       - setup_remote_docker
       - run:
           name: Build application Docker image
