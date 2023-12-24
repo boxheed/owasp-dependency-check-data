@@ -7,4 +7,4 @@ RUN sudo apt-get update \
   && sudo apt-get clean \
   && sudo apt-get autoclean
 
-RUN update-ca-certificates --fresh
+RUN sudo update-ca-certificates --fresh
