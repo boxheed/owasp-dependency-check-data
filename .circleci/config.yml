@@ -4,6 +4,8 @@ version: 2.1
 
 vars: &globals
   IMAGE_NAME: boxheed/openjdk-17-nvd-cve-db
+  VULNZ_VERSION: "5.1.1"
+  DEPENDENCY_CHECK_VERSION: "9.0.9"
 
 jobs:
   update-cache:
@@ -13,7 +15,7 @@ jobs:
       - checkout
       - run: git config user.name fizzpod-machine-user
       - run: git config user.email fizzpod-machine-user@users.noreply.github.com
-      - run: mkdir -p ./bin && curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v5.1.0/vulnz-5.1.0.jar --output ./bin/vulnz.jar
+      - run: mkdir -p ./bin && curl -L https://github.com/jeremylong/Open-Vulnerability-Project/releases/download/v$VULNZ_VERSION/vulnz-$VULNZ_VERSION.jar --output ./bin/vulnz.jar
       - run: java -jar ./bin/vulnz.jar cve --cache --directory ./nvdcve-data --debug
       - run: version=$(date +'%Y.%m.%d') && git add -A && git commit -m "$version CVE NVD Data Updated [skip ci]" && git tag "$version" 
       - run: version=$(date +'%Y.%m.%d') && git push --atomic --set-upstream origin $CIRCLE_BRANCH $version
@@ -25,7 +27,7 @@ jobs:
       - checkout
       - run: echo "publish"
       - run: mkdir -p ./build/db
-      - run: curl -L https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.4/dependency-check-9.0.4-release.zip --output ./build/dependency-check.zip
+      - run: curl -L https://github.com/jeremylong/DependencyCheck/releases/download/v$DEPENDENCY_CHECK_VERSION/dependency-check-$DEPENDENCY_CHECK_VERSION-release.zip --output ./build/dependency-check.zip
       - run: cd ./build && unzip dependency-check.zip && cd ..
       - run: ./build/dependency-check/bin/dependency-check.sh --updateonly --nvdDatafeed file://$PWD/nvdcve-data/nvdcve-{0}.json.gz --data ./build/db
       - save_cache:
